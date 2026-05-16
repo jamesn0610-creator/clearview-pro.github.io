@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c1821">
+<title>ClearView Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c1821;
+    --surface: #142d3a;
+    --surface2: #1a3a4a;
+    --border: #1e4a60;
+    --accent: #2a7fac;
+    --accent-light: #7dd3fc;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 80px; }
+  
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a3a4a, #0c2535); border-bottom: 2px solid var(--accent); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { font-size: 26px; }
+  .logo-text { font-size: 18px; font-weight: 700; color: var(--accent-light); letter-spacing: 0.5px; }
+  .logo-sub { font-size: 10px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; }
+  .save-badge { font-size: 11px; color: var(--green); opacity: 0; transition: opacity 0.3s; }
+  .save-badge.show { opacity: 1; }
+
+  /* Bottom Nav */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0d1f2d; border-top: 1px solid var(--border); display: flex; z-index: 100; }
+  .nav-btn { flex: 1; padding: 12px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--dim); font-family: 'DM Sans', sans-serif; font-size: 10px; cursor: pointer; transition: color 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+  .nav-btn.active { color: var(--accent-light); }
+  .nav-btn .nav-icon { font-size: 20px; }
+
+  /* Main content */
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  /* Cards */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .stat-card { background: linear-gradient(135deg, var(--surface2), var(--surface)); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+  .stat-icon { font-size: 20px; margin-bottom: 6px; }
+  .stat-val { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+  .stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Section headers */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-title { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1.5px; }
+
+  /* Job / Customer cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 8px; }
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-name { font-weight: 700; color: var(--text); font-size: 15px; }
+  .card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .card-sub2 { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .card-right { text-align: right; flex-shrink: 0; }
+  .card-price { font-weight: 700; font-size: 16px; color: var(--green); }
+  .card-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+
+  /* Status badge */
+  .badge { font-size: 10px; padding: 3px 9px; border-radius: 20px; display: inline-block; margin-top: 4px; }
+  .plan-badge { background: var(--surface2); border: 1px solid var(--accent); color: var(--accent-light); border-radius: 20px; padding: 3px 10px; font-size: 11px; display: inline-block; }
+
+  /* Buttons */
+  .btn-primary { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 11px 18px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 11px 18px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid #ef444433; border-radius: 8px; padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-back { background: none; border: none; color: var(--accent-light); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; padding: 0 0 14px; display: flex; align-items: center; gap: 6px; }
+
+  /* Forms */
+  .form-panel { background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  .form-title { font-weight: 700; color: var(--accent-light); margin-bottom: 12px; font-size: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .form-grid .full { grid-column: span 2; }
+  input, select, textarea { background: var(--bg); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; outline: none; -webkit-appearance: none; appearance: none; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+  /* Empty state */
+  .empty { color: var(--dim); font-style: italic; text-align: center; padding: 30px 0; font-size: 14px; }
+
+  /* Inline status select on job card */
+  .status-select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 11px; color: var(--muted); font-family: 'DM Sans', sans-serif; width: auto; cursor: pointer; }
+
+  /* Detail view */
+  .detail-header { background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .detail-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .detail-info { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .detail-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+  /* Fab (floating add button) */
+  .fab { position: fixed; bottom: 76px; right: 16px; background: var(--accent); color: #fff; border: none; border-radius: 50%; width: 52px; height: 52px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(42,127,172,0.4); z-index: 99; display: flex; align-items: center; justify-content: center; }
+
+  /* Toast */
+  .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🪟</div>
+    <div>
+      <div class="logo-text">ClearView Pro</div>
+      <div class="logo-sub">Window Cleaning</div>
+    </div>
+  </div>
+  <span class="save-badge" id="saveBadge">✓ Saved</span>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val" id="stat-revenue" style="color:#22c55e">$0</div><div class="stat-label">Total Revenue</div></div>
+    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-val" id="stat-month" style="color:#7dd3fc">$0</div><div class="stat-label">This Month</div></div>
+    <div class="stat-card"><div class="stat-icon">🗓️</div><div class="stat-val" id="stat-scheduled" style="color:#f59e0b">0</div><div class="stat-label">Upcoming</div></div>
+    <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-val" id="stat-customers" style="color:#a78bfa">0</div><div class="stat-label">Customers</div></div>
+  </div>
+  <div class="section-header"><span class="section-title">Recent Jobs</span></div>
+  <div id="dash-jobs"></div>
+</div>
+
+<!-- JOBS -->
+<div class="page" id="page-jobs">
+  <div class="form-panel" id="add-job-form" style="display:none">
+    <div class="form-title">+ New Job</div>
+    <div class="form-grid">
+      <select id="job-customer" class="full"><option value="">Select Customer</option></select>
+      <input type="date" id="job-date">
+      <select id="job-type">
+        <option>Exterior Only</option>
+        <option>Interior Only</option>
+        <option>Interior + Exterior</option>
+        <option>Screen Cleaning</option>
+        <option>Pressure Wash</option>
+      </select>
+      <select id="job-status">
+        <option>Scheduled</option>
+        <option>Completed</option>
+        <option>Invoiced</option>
+        <option>Cancelled</option>
+      </select>
+      <input type="number" id="job-price" placeholder="Price ($)" inputmode="decimal">
+      <input type="text" id="job-notes" placeholder="Notes">
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary btn-sm" onclick="saveJob()">Save Job</button>
+      <button class="btn-secondary btn-sm" onclick="hideJobForm()">Cancel</button>
+    </div>
+  </div>
+  <div class="section-header"><span class="section-title" id="jobs-count">All Jobs</span></div>
+  <div id="jobs-list"></div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <!-- Customer list view -->
+  <div id="customers-list-view">
+    <div class="form-panel" id="add-customer-form" style="display:none">
+      <div class="form-title">+ New Customer</div>
+      <div class="form-grid">
+        <input type="text" id="cust-name" placeholder="Full Name / Business" class="full">
+        <input type="tel" id="cust-phone" placeholder="Phone" inputmode="tel">
+        <input type="text" id="cust-address" placeholder="Address">
+        <input type="email" id="cust-email" placeholder="Email" inputmode="email">
+        <select id="cust-plan">
+          <option>One-Time</option><option>Monthly</option><option>Bi-Monthly</option>
+          <option>Quarterly</option><option>Semi-Annual</option><option>Annual</option>
+        </select>
+        <input type="number" id="cust-windows" placeholder="# of Windows" inputmode="numeric">
+        <input type="text" id="cust-notes" placeholder="Notes (gate codes, pets...)" class="full">
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary btn-sm" onclick="saveCustomer()">Save Customer</button>
+        <button class="btn-secondary btn-sm" onclick="hideCustomerForm()">Cancel</button>
+      </div>
+    </div>
+    <div class="section-header"><span class="section-title" id="customers-count">Customers</span></div>
+    <div id="customers-list"></div>
+  </div>
+
+  <!-- Customer detail view -->
+  <div id="customer-detail-view" style="display:none">
+    <button class="btn-back" onclick="closeDetail()">← Back</button>
+    <div class="detail-header" id="detail-header"></div>
+    <div class="section-title" style="margin-bottom:10px">Job History</div>
+    <div id="detail-jobs"></div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">
+    <span class="nav-icon">📊</span>Dashboard
+  </button>
+  <button class="nav-btn" id="nav-jobs" onclick="showPage('jobs')">
+    <span class="nav-icon">🧹</span>Jobs
+  </button>
+  <button class="nav-btn" id="nav-customers" onclick="showPage('customers')">
+    <span class="nav-icon">👤</span>Customers
+  </button>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="fabAction()">+</button>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────
+let data = { customers: [], jobs: [] };
+
+function load() {
+  try { const s = localStorage.getItem('clearview-pro'); if (s) data = JSON.parse(s); } catch(e) {}
+  render();
+}
+
+function save() {
+  localStorage.setItem('clearview-pro', JSON.stringify(data));
+  const b = document.getElementById('saveBadge');
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 1800);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Status colors ─────────────────────────────────────────────────
+const SC = { Scheduled:'#3b82f6', Completed:'#22c55e', Cancelled:'#ef4444', Invoiced:'#f59e0b' };
+
+// ── Navigation ────────────────────────────────────────────────────
+let currentPage = 'dashboard';
+
+function showPage(p) {
+  currentPage = p;
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  document.getElementById('nav-' + p).classList.add('active');
+  // close detail if switching away
+  if (p !== 'customers') closeDetail();
+  render();
+}
+
+// ── FAB ───────────────────────────────────────────────────────────
+function fabAction() {
+  if (currentPage === 'jobs') toggleJobForm();
+  else if (currentPage === 'customers') toggleCustomerForm();
+  else showPage('jobs'), setTimeout(toggleJobForm, 50);
+}
+
+// ── Job form ──────────────────────────────────────────────────────
+function toggleJobForm() {
+  const f = document.getElementById('add-job-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') populateCustomerSelect();
+}
+function hideJobForm() { document.getElementById('add-job-form').style.display = 'none'; }
+
+function populateCustomerSelect() {
+  const sel = document.getElementById('job-customer');
+  sel.innerHTML = '<option value="">Select Customer</option>';
+  data.customers.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.name; sel.appendChild(o);
+  });
+}
+
+function saveJob() {
+  const cid = document.getElementById('job-customer').value;
+  const date = document.getElementById('job-date').value;
+  if (!cid || !date) { toast('Pick a customer and date!'); return; }
+  data.jobs.push({
+    id: Date.now(),
+    customerId: Number(cid),
+    date,
+    type: document.getElementById('job-type').value,
+    status: document.getElementById('job-status').value,
+    price: Number(document.getElementById('job-price').value) || 0,
+    notes: document.getElementById('job-notes').value,
+  });
+  save(); hideJobForm(); render(); toast('Job saved!');
+  ['job-customer','job-date','job-price','job-notes'].forEach(id => document.getElementById(id).value = '');
+}
+
+function deleteJob(id) {
+  if (!confirm('Delete this job?')) return;
+  data.jobs = data.jobs.filter(j => j.id !== id);
+  save(); render();
+}
+
+function updateStatus(id, status) {
+  const j = data.jobs.find(j => j.id === id);
+  if (j) { j.status = status; save(); render(); }
+}
+
+// ── Customer form ─────────────────────────────────────────────────
+function toggleCustomerForm() {
+  const f = document.getElementById('add-customer-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+function hideCustomerForm() { document.getElementById('add-customer-form').style.display = 'none'; }
+
+function saveCustomer() {
+  const name = document.getElementById('cust-name').value.trim();
+  if (!name) { toast('Enter a customer name!'); return; }
+  data.customers.push({
+    id: Date.now(),
+    name,
+    phone: document.getElementById('cust-phone').value,
+    address: document.getElementById('cust-address').value,
+    email: document.getElementById('cust-email').value,
+    plan: document.getElementById('cust-plan').value,
+    windows: document.getElementById('cust-windows').value,
+    notes: document.getElementById('cust-notes').value,
+  });
+  save(); hideCustomerForm(); render(); toast('Customer added!');
+  ['cust-name','cust-phone','cust-address','cust-email','cust-windows','cust-notes'].forEach(id => document.getElementById(id).value = '');
+}
+
+function deleteCustomer(id) {
+  if (!confirm('Delete customer and all their jobs?')) return;
+  data.customers = data.customers.filter(c => c.id !== id);
+  data.jobs = data.jobs.filter(j => j.customerId !== id);
+  save(); closeDetail(); render();
+}
+
+// ── Detail view ───────────────────────────────────────────────────
+let detailCustomerId = null;
+
+function openDetail(id) {
+  detailCustomerId = id;
+  document.getElementById('customers-list-view').style.display = 'none';
+  document.getElementById('customer-detail-view').style.display = 'block';
+  renderDetail();
+}
+function closeDetail() {
+  detailCustomerId = null;
+  document.getElementById('customers-list-view').style.display = 'block';
+  document.getElementById('customer-detail-view').style.display = 'none';
+}
+
+function renderDetail() {
+  const c = data.customers.find(c => c.id === detailCustomerId);
+  if (!c) return;
+  const cJobs = data.jobs.filter(j => j.customerId === c.id).sort((a,b) => new Date(b.date)-new Date(a.date));
+  const earned = cJobs.filter(j=>j.status==='Completed').reduce((s,j)=>s+j.price,0);
+
+  document.getElementById('detail-header').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="detail-name">${c.name}</div>
+        ${c.address ? `<div class="detail-info">📍 ${c.address}</div>` : ''}
+        ${c.phone ? `<div class="detail-info">📞 <a href="tel:${c.phone}" style="color:var(--accent-light);text-decoration:none">${c.phone}</a></div>` : ''}
+        ${c.email ? `<div class="detail-info">✉️ ${c.email}</div>` : ''}
+        ${c.notes ? `<div class="detail-info" style="color:var(--dim);font-style:italic;margin-top:4px">📝 ${c.notes}</div>` : ''}
+      </div>
+      <div style="text-align:right">
+        <div class="plan-badge">${c.plan}</div>
+        ${c.windows ? `<div style="font-size:12px;color:var(--dim);margin-top:4px">${c.windows} windows</div>` : ''}
+        <div style="font-size:14px;color:var(--green);font-weight:700;margin-top:4px">$${earned} earned</div>
+        <button class="btn-danger" style="margin-top:8px" onclick="deleteCustomer(${c.id})">Delete</button>
+      </div>
+    </div>`;
+
+  const djEl = document.getElementById('detail-jobs');
+  if (cJobs.length === 0) { djEl.innerHTML = '<div class="empty">No jobs yet.</div>'; return; }
+  djEl.innerHTML = cJobs.map(j => `
+    <div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-name" style="font-size:14px">${j.type}</div>
+          <div class="card-sub">${j.date}${j.notes ? ' · ' + j.notes : ''}</div>
+        </div>
+        <div class="card-right">
+          <div class="card-price">$${j.price}</div>
+          <div class="badge" style="background:${SC[j.status]}22;color:${SC[j.status]};border:1px solid ${SC[j.status]}44">${j.status}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function customerName(id) {
+  return (data.customers.find(c => c.id === id) || {}).name || 'Unknown';
+}
+
+function render() {
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const completed = data.jobs.filter(j=>j.status==='Completed');
+  const totalRev = completed.reduce((s,j)=>s+j.price,0);
+  const monthRev = completed.filter(j=>j.date.startsWith(monthKey)).reduce((s,j)=>s+j.price,0);
+  const sched = data.jobs.filter(j=>j.status==='Scheduled').length;
+
+  document.getElementById('stat-revenue').textContent = '$' + totalRev.toLocaleString();
+  document.getElementById('stat-month').textContent = '$' + monthRev.toLocaleString();
+  document.getElementById('stat-scheduled').textContent = sched;
+  document.getElementById('stat-customers').textContent = data.customers.length;
+
+  // Dashboard jobs
+  const sorted = [...data.jobs].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const djEl = document.getElementById('dash-jobs');
+  if (data.jobs.length === 0) { djEl.innerHTML = '<div class="empty">No jobs yet. Add customers & jobs to get started.</div>'; }
+  else djEl.innerHTML = sorted.slice(0,8).map(j=>`
+    <div class="card">
+      <div class="card-row">
+        <div style="display:flex;align-items:center;gap:6px;min-width:0">
+          <div class="card-dot" style="background:${SC[j.status]}"></div>
+          <div style="min-width:0">
+            <div class="card-name">${customerName(j.customerId)}</div>
+            <div class="card-sub">${j.type} · ${j.date}</div>
+          </div>
+        </div>
+        <div class="card-right" style="flex-shrink:0">
+          <div class="card-price">$${j.price}</div>
+          <div class="badge" style="background:${SC[j.status]}22;color:${SC[j.status]};border:1px solid ${SC[j.status]}44">${j.status}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Jobs list
+  document.getElementById('jobs-count').textContent = `All Jobs (${data.jobs.length})`;
+  const jlEl = document.getElementById('jobs-list');
+  if (data.jobs.length === 0) { jlEl.innerHTML = '<div class="empty">No jobs yet. Tap + to add one.</div>'; }
+  else jlEl.innerHTML = sorted.map(j=>`
+    <div class="card">
+      <div class="card-row">
+        <div style="min-width:0">
+          <div class="card-name">${customerName(j.customerId)}</div>
+          <div class="card-sub" style="color:var(--accent-light)">${j.type} · ${j.date}</div>
+          ${j.notes ? `<div class="card-sub">${j.notes}</div>` : ''}
+        </div>
+        <div class="card-right" style="flex-shrink:0">
+          <div class="card-price">$${j.price}</div>
+          <div style="margin-top:6px;display:flex;gap:5px;justify-content:flex-end">
+            <select class="status-select" style="color:${SC[j.status]}" onchange="updateStatus(${j.id},this.value)">
+              ${['Scheduled','Completed','Invoiced','Cancelled'].map(s=>`<option${s===j.status?' selected':''}>${s}</option>`).join('')}
+            </select>
+            <button class="btn-danger btn-sm" style="padding:4px 8px" onclick="deleteJob(${j.id})">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Customers list
+  document.getElementById('customers-count').textContent = `Customers (${data.customers.length})`;
+  const clEl = document.getElementById('customers-list');
+  if (data.customers.length === 0) { clEl.innerHTML = '<div class="empty">No customers yet. Tap + to add one.</div>'; }
+  else clEl.innerHTML = data.customers.map(c => {
+    const cJobs = data.jobs.filter(j=>j.customerId===c.id);
+    const earned = cJobs.filter(j=>j.status==='Completed').reduce((s,j)=>s+j.price,0);
+    const last = [...cJobs].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    return `<div class="card" onclick="openDetail(${c.id})" style="cursor:pointer">
+      <div class="card-row">
+        <div style="min-width:0">
+          <div class="card-name">${c.name}</div>
+          ${c.address ? `<div class="card-sub2">📍 ${c.address}</div>` : ''}
+          ${c.phone ? `<div class="card-sub2">📞 ${c.phone}</div>` : ''}
+          ${c.notes ? `<div class="card-sub" style="font-style:italic">📝 ${c.notes}</div>` : ''}
+        </div>
+        <div class="card-right" style="flex-shrink:0">
+          <div class="plan-badge">${c.plan}</div>
+          ${c.windows ? `<div style="font-size:11px;color:var(--dim);margin-top:4px">${c.windows} windows</div>` : ''}
+          <div style="font-size:13px;color:var(--green);font-weight:700;margin-top:3px">$${earned}</div>
+          ${last ? `<div style="font-size:10px;color:var(--dim)">Last: ${last.date}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (detailCustomerId) renderDetail();
+}
+
+load();
+</script>
+</body>
+</html>
